@@ -1,0 +1,117 @@
+\documentclass{vldb}
+\usepackage{balance}
+\usepackage{url}
+\usepackage{algorithm2e}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{adjustbox}
+\usepackage{times}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{subfigure}
+
+\usepackage{listings}
+\lstset{language=Java,
+basicstyle =\small,
+xleftmargin=0.05\linewidth,
+xrightmargin=0.05\linewidth}
+
+\lstMakeShortInline[language=java]{|}
+
+\newcommand{\ol}[1]{\texttt{\small #1}}
+\newcommand{\OL}[1]{\texttt{\textbf{#1}}}
+
+
+\newcommand{\inner}[2]{\left\langle #1,#2 \right\rangle}
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\xy}[0]{(\vec{x},y)}
+\newcommand{\w}[0]{\vec{w}}
+\newcommand{\argmin}[1]{\underset{#1}{\operatorname{argmin}}}
+
+\newcommand{\note}[2]{[\textcolor{red}{\textbf{#1:} \emph{#2}}]}
+\newcommand{\memo}[1]{[\textcolor{blue}{\textit{#1}}]}
+\newcommand{\carlo}[1]{[\textcolor{blue}{\textit{CARLO: #1}}]}
+\newcommand{\bikas}[1]{[\textcolor{blue}{\textit{BIKAS: #1}}]}
+\newcommand{\hitesh}[1]{[\textcolor{blue}{\textit{HITESH: #1}}]}
+
+
+\newcolumntype{R}[2]{%
+    >{\adjustbox{angle=#1,lap=\width-(#2)}\bgroup}%
+    l%
+    <{\egroup}%
+}
+\newcommand*\rot{\multicolumn{1}{R{90}{1em}}}% no optional argument here, please!
+
+
+\newcommand{\eat}[1]{}
+
+\begin{document}
+
+
+\title{LLAP: Live Long and Process}
+
+\numberofauthors{1} 
+\author{
+\alignauthor
+??$^m$, Gopal Vijayaraghavan$^h$, Gunther Hagleitner$^h$, Prasanth Jayachandran$^h$, \\ 
+Sergey Shelukhin$^h$, Siddharth Seth $^h$
+\\
+{\large \emph{$^h$: Hortonworks, $^m$: Mentor Professor}}
+}
+
+\maketitle
+
+\begin{abstract}
+The success of Apache Hive in turning SQL into a preferred and secure mechanism to
+access data has been aided by its evolution into a DAG based execution engine, based on
+a columnar data layer with vectorized operators. In the journey towards ever faster queries,
+as the needle swings towards sub-second scale, tradeoffs made historically have to be revaluated.  
+In addition to pure performance goals, there are opportunities offered by the evolution of compute, storage 
+and networking hardware to be taken advantage of.
+
+
+In this paper, we introduce LLAP, an \emph{in-memory SQL acceleration framework} for Apache Hive, designed
+to run low-latency SQL workloads for ad-hoc querying, Business Intelligence analytics and periodic reporting.
+Central to this design are long lived processes, which provide an in-memory SQL execution substrate which draws
+data out of a completely automated caching layer. The long-lived nature of these LLAP instances, retains the runtime profile
+information of several short queries to provide the JVM JIT long term context to optimize the execution engine
+using \emph{SIMD} instructions to suit the exact users' data model \& workload.
+
+
+Even though low-latency execution is the primary performance goal, it is the combination of failure tolerance, 
+internal pre-emption model based on dynamic query fragment priority, user-transparent replicated data/index fragment
+caching \& eviction, ability to maintain isolation for update/delete ACID transactions and perform out-of-core joins 
+that makes \emph{LLAP} an entirely different beast from the other open source solutions which offer performance at the cost
+of necessary functionality.
+
+
+LLAP's design draws from the experiences learned from deployments of scale of Apache Hive \& Apache Tez. We complement
+the qualitative accounts of LLAP's development with quantitative experimental evidence that the dragon of latency in
+a multi-tenant environment can have its long tail cut.
+\end{abstract}
+
+\input{intro}
+%% \input{hist}
+%% \input{arch}
+%% \input{elasticity}
+%% \input{cache}
+%% \input{orchestration}
+%% \input{concurrency}
+%% \input{exp}
+%% \input{futwork}
+%% \input{relwork}
+%% \input{conclusions}
+
+
+\section*{Acknowledgements}
+Apache Hive is an open source community driven project with contributions gratefully accepted from numerous individuals and organizations. 
+In particular we would like to call out ...
+We are also grateful to ... and Hortonworks for providing experimentation infrastructure. 
+
+\balance
+\small
+\bibliographystyle{abbrv}
+\bibliography{biblio}
+
+\end{document}

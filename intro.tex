@@ -1,0 +1,45 @@
+\section{Introduction}
+
+The enterprise data warehouse, once a workhorse of the data analytics companies is slowly merging with the once exotic technologies used for large scale data analytics, giving birth to innovations such as Hive, which has turned HiveQL into a de-facto SQL implementation dialect. This popularity has come on the heels of a reduction in cost and has ridden on the coat-tails of the \emph{schema-on-read} model primarily brought by NoSQL data sources. The familiarity of SQL and the flexibility of storage brings us to the present day, where SQL-on-Hadoop is on its rise as the preferred data access model garnering adoption from companies which use either SQL or Hadoop heavily.
+
+In this paper, we inspect this vibrant ecosystem through the lens of Apache Hive, as this provides the perspective for introducing LLAP. Refer Section~\ref{sec:relwork} for a broader comparison of the related or competing projects, which were undeniably also inspired by the success of Hive and have provided goalposts to aim for or pitfalls to avoid in our quest to improve Apache Hive. 
+
+Hive was initially a SQL-like layer designed over MapReduce, but has since evolved into a mature engine with advanced OLAP capabilities required for a modern data analytics platform.
+The undeniable success of Hive and its widespread adoption demanded innovations along the way, including adopting columnar storage \cite{ORC}, designing a fully fault-tolerant DAG framework \cite{tez}, adopting an advanced cost based optimizer \cite{calcite} and adding ACID insert/update/delete transactions with strong consistency. This phase of the journey resulted in Hive establishing itself as the tool of choice of SQL ETL workloads, but also allows ad-hoc queries and reporting with greater efficiency and higher performance than the original MapReduce based batch model.
+
+Hive also established itself as the single system of record for metadata for tabular data across the ecosystem, with nearly all SQL-on-Hadoop open source projects building bridge mechanisms to access Hive data as a first-class data source and in general, tailor their SQL dialects to match. Over the period of half a decade, the length of the average query kept shrinking from hours down to a few seconds, reducing more than 100x as part of the Stinger\cite{tez} initiative. This brings Hive's performance close to the ballpark for business intelligence workloads, which demand latencies better measured in milliseconds.
+
+In this paper, we introduce LLAP, the innovation over the existing foundations of Hive, which cuts through layers of overheads which have kept Hive out of the sub-second category. The system combines all the advantages of Apache Hive and Tez with an in-memory acceleration layer which brings common low-latency workloads to acceptable speed, while adding better concurrency models for multi-tenancy. LLAP is not an execution engine by itself, but is an accelerator which relies on the emergence of large memory machines to speed up queries.
+
+LLAP was built under some fundamental assumptions:
+\begin{enumerate}
+\item Low-latency is the first goal, but not the only one
+\item Failure tolerance is critical 
+\item Multi-query concurrency is critical 
+\item Production clusters are always busy and need forced pre-emption
+\item Temporal data access patterns are common
+\item Data will overflow caches and working sets 
+\item Caches have to be automatic, including eviction 
+\item Elasticity is necessary - shed capacity during off-peak hours
+\item Automatic service discovery brings elasticity 
+\item Strong security models need user/framework process boundaries 
+\item Hybrid execution is necessary for process boundaries
+\end{enumerate}
+
+LLAP is unique in its pursuit of the low-latency goals as it does not try to reinvent a completely new SQL engine. It offers an execution algebra layer which interacts with the Hive execution engine, with dynamic decisions on whether a query or even parts of a query render down into the LLAP query fragments. This brings it closer to production readiness than other solutions which offer an all-or-nothing framework, which takes away key features of Hive like strong security models or failure tolerance as part of the choice.
+
+The query fragment independence offers some of the same advantages to any engine which can use LLAP as a data source. This raises the possibility that LLAP can serve as a pluggable data source for 
+distributed task execution systems such as PIG \cite{pig}, Flink\cite{flink}, and Spark\cite{spark}, allowing for secure process separation for column or row-level security. Exporting LLAP as a data source with security built-in, allows for geographically distributed queries, with a data-model that spans multiple geo-locations and independent federated query execution.
+
+Beyond discussing the execution mechanisms of LLAP, we demonstrate its abilities to accelerate queries, provide security separation and provide concurrency control for busy clusters advantages over other execution engines of Tez, we demonstrate its competence to support Hive, Pig, and Spark, by running standard benchmarks such as TPC-H and TPC-DS, and production workloads from Yahoo!. 
+
+The rest of this paper is organized as follows: 
+Section~\ref{sec:hist} provides some more historical context, and rationale for the design, 
+while Section~\ref{sec:arch} introduces architectural underpinnings of LLAP. 
+Section~\ref{sec:elasticity} discusses the deployment model of LLAP and the elasticity mechanisms of LLAP, 
+Section~\ref{sec:cache} discusses the cache implementation of LLAP, 
+Section~\ref{sec:orchestration} discusses the orchestration and task distribution implementation of LLAP including failure tolerance,
+Section~\ref{sec:concurrency}discusses the internal resource management which brings better concurrency to LLAP,
+Section\ref{sec:exp} is devoted to the experimental evalution and measurements from real-world deployments,
+We conclude by discussing future and related work in Sections~\ref{sec:futwork} and \ref{sec:relwork}, 
+and conclude in Section~\ref{sec:conclusions}
