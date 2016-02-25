@@ -10,6 +10,7 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{subfigure}
+\usepackage{flushend}
 
 \usepackage{listings}
 \lstset{language=Java,
@@ -31,9 +32,6 @@ xrightmargin=0.05\linewidth}
 
 \newcommand{\note}[2]{[\textcolor{red}{\textbf{#1:} \emph{#2}}]}
 \newcommand{\memo}[1]{[\textcolor{blue}{\textit{#1}}]}
-\newcommand{\carlo}[1]{[\textcolor{blue}{\textit{CARLO: #1}}]}
-\newcommand{\bikas}[1]{[\textcolor{blue}{\textit{BIKAS: #1}}]}
-\newcommand{\hitesh}[1]{[\textcolor{blue}{\textit{HITESH: #1}}]}
 
 
 \newcolumntype{R}[2]{%
@@ -90,10 +88,12 @@ of necessary functionality.
 LLAP's design draws from the experiences learned from deployments of scale of Apache Hive \& Apache Tez. We complement
 the qualitative accounts of LLAP's development with quantitative experimental evidence that the dragon of latency in
 a multi-tenant environment can have its long tail cut.
+
+
 \end{abstract}
 
 \input{intro}
-%% \input{arch}
+\input{arch}
 %% \input{elasticity}
 %% \input{cache}
 %% \input{orchestration}
