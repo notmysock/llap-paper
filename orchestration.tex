@@ -1,4 +1,4 @@
-\section{Query Fragments \& Tez}
+\section{Query Fragments}
 
 LLAP does not take up the responsibility of performing task orchestration or determining where each task should run on. 
 This however is not possible directly by an external DAG engine such as Apache Tez\cite{tez}, without having access to
@@ -16,11 +16,19 @@ completed.
 The query fragments kick off the IO elevator and initialize the operator pipeline in parallel. In some cases, the fragments
 might discover that other fragments which require similar initialization are running in the same process and decide to 
 co-operate on expensive initialization operations like building broadcast-join hashtables, which will be built exactly once
-per node instead of being build multiple times in each fragment.
+per node instead of being build multiple times in each fragment. If a query fragment happens to be waiting on a machine the
+fragment will send heartbeats out eventhough it is not running, to let the DAG master know that the process hosting the
+fragment is still alive.
+
+The query fragments are the basic unit of failure tolerance. Whenever a query fragment fails, it gets rescheduled until it
+has failed for the maximum number of times, the process of rescheduling it can even involve terminating a running fragment
+which is part of the same query depending on the priority between the fragments. These operations within a single DAG execution
+maps exactly to the dead lock prevention already in the Tez vertex schedulers, differing only in the means of communication -
+however, the speed at which LLAP fragments execute result in far higher likelihood of exposing race conditions within user
+written vertexmanagers.
 
 
 In secure clusters, the orchestration \& discovery can only happen with a single user, to avoid accidental security leakage
 between users inhabiting the same process and sharing the same cache. This is not as much hardship as it sounds as the 
 Apache Ranger\cite{ranger} perimeter security translates all users into a single user after security verifications are 
 complete, to ensure that no user has actual file level access to tables.
-
