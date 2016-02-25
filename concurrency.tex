@@ -1,0 +1,24 @@
+\section{Concurrency Control}
+
+LLAP is designed for busy clusters. This translates into a deluge of query fragments hitting each LLAP instance 
+usually exceeding the capacity available on that node. Since cache locality is rather important, even after 
+capacity of a node is occupied, it will maintain wait list of tasks which would be used a queue to pick the 
+next task from instead of performing a full round-trip to the application masters. After all the executors are
+full and the wait list is entirely taken  up, LLAP will start to turn away application masters and effectively
+communicate a back-off to any query which wants to add more fragments to this specific node.
+
+To get better throughput rather than low latency of return, increasing the depth of the wait queue will 
+produce a system which is better at absorbing query fragments and executing them as resources become available,
+resulting in an entirely busy system at all time. Alternatively, for a low latency query pattern, switching the locality delay to infinity for the cache affinity
+will result in a task being pinned a node which has a high probablity of cache hit-rate, even if none of the machines
+involved in the LLAP cluster have data locality. 
+
+The wait queue and the forced affinity are both tuning parameters, which have differing effects in a busy cluster but in an entirely
+idle cluster, they're both ways of ensuring that tasks run on the preferred nodes which have a high probability of cached data.
+
+
+The wait queue is not a simple queue or even a static priority queue, the wait queue contains query fragments which have multiple
+states of readiness as well as priority hueristics which change depending on how long it has been in the queue and how many of its 
+siblings are complete. 
+
+%% TODO: describe isFinishable, priority shifts 
