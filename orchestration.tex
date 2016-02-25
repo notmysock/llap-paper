@@ -1,0 +1,26 @@
+\section{Query Fragments \& Orchestration}
+
+LLAP does not take up the responsibility of performing task orchestration or determining where each task should run on. 
+This however is not possible directly by an external DAG engine such as Apache Tez\cite{tez}, without having access to
+a common vocabulary for interaction. LLAP from the orchestration engine's perspective is another implementation of the
+ContainerLauncher, but in this case one which talks to LLAP instance over rpc instead of the YARN NodeManager. Hive and
+Tez together come up with a DAG plan, which is then divided into many query fragments which are self-contained and can 
+execute on any LLAP instance, but has a definite preference towards cache affinity and HDFS data locality.
+
+The fragments are scheduled onto LLAP daemons published under a name in the service registry. For the sake of enabling 
+Hybrid execution mode, the events streaming out of LLAP are exactly identical to the events obtained from the Tez containers
+and handled by a plugin service loaded into Tez ApplicationMaster. LLAP however receives some special events from the
+plugin when communicating downstream, since there are special indicators for clean up operations for queries which have
+completed.
+
+The query fragments kick off the IO elevator and initialize the operator pipeline in parallel. In some cases, the fragments
+might discover that other fragments which require similar initialization are running in the same process and decide to 
+co-operate on expensive initialization operations like building broadcast-join hashtables, which will be built exactly once
+per node instead of being build multiple times in each fragment.
+
+
+In secure clusters, the orchestration \& discovery can only happen with a single user, to avoid accidental security leakage
+between users inhabiting the same process and sharing the same cache. This is not as much hardship as it sounds as the 
+Apache Ranger\cite{ranger} perimeter security translates all users into a single user after security verifications are 
+complete, to ensure that no user has actual file level access to tables.
+
