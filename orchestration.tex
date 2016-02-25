@@ -23,9 +23,9 @@ fragment is still alive.
 The query fragments are the basic unit of failure tolerance. Whenever a query fragment fails, it gets rescheduled until it
 has failed for the maximum number of times, the process of rescheduling it can even involve terminating a running fragment
 which is part of the same query depending on the priority between the fragments. These operations within a single DAG execution
-maps exactly to the dead lock prevention already in the Tez vertex schedulers, differing only in the means of communication -
-however, the speed at which LLAP fragments execute result in far higher likelihood of exposing race conditions within user
-written vertexmanagers.
+maps exactly to the dead lock prevention already in the Tez vertex manager plugins, differing only in the means of communication -
+however, the speed at which LLAP fragments execute result in far higher likelihood of exposing race conditions within future 
+vertexmanager plugins.
 
 
 In secure clusters, the orchestration \& discovery can only happen with a single user, to avoid accidental security leakage
