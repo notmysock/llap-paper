@@ -34,12 +34,12 @@ To that effect, the architecture of LLAP follows these .
 \item \textbf{Integration with YARN.} LLAP is not external to YARN. LLAP resources are obtained and monitored via YARN. 
 \end{enumerate}
 
-\begin{figure*}
+\begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/arch1.png}
+\includegraphics[width=0.8\columnwidth]{figures/arch1.png}
 \caption{LLAP: as an accelerator}
 \label{fig:arch1}
-\end{figure*} 
+\end{figure} 
 
 The query engine remains Hive, running Hive
 SQL operators while using Tez's DAG execution engine to execute the DAG across failure scenarios and to handle deadlock pre-emption within 
