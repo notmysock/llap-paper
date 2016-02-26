@@ -104,14 +104,58 @@ Concurrency & Q/S & LLAP(avg) & LLAP (worst) \\
 \caption{HiveServer2 Concurrency Tests}
 \end{table}
 
-%% \subsection{TPC-DS Derived Comparison}
-%% Q19, Q27, Q42, Q52, Q55, Q68, Q73, Q98?
+\subsection{Interactive Queries}
 
-%% \subsection{Yahoo Display Network Report}
+The TPC-DS data-set is a better candiate for a repeatable benchmark for LLAP, allowing any cluster to generate
+identical data at scale factors for testing. The experimental setup is a SCALE=1000 TPC-DS data set using the 
+schema from hive-testbench\cite{testbench}, with interactive queries 
+27, 42, 52, 55, 68, 73 and 98.
 
-\subsection{Azure}
+\begin{table}[h]
+\begin{tabular}{l|*{1}cr}
+Query & LLAP time (s) & Vertices \\
+\hline \\
+Query 27 & 4.35 & 7  \\
+Query 42 & 0.97 & 5  \\
+Query 52 & 1.27 & 5  \\
+Query 55 & 0.89 & 5 \\
+Query 68 & 2.86 & 9 \\
+Query 73 & 1.53 & 7 \\
+Query 98 & 3.90 & 6 \\
+\end{tablular}
+\caption{Interactive Queries on LLAP}
+\end{table}
 
-LLAP: 128 nodes + non-local data
+In this example, the compilation time for the query has been excluded from the benchmark as it overshadows the
+total runtime of the query.
 
-Q1 baseline is 357s -> 50s at 1Tb scale.
+\subsection{Index Caching}
+
+Lookups for a single primary key can populate indexes for the primary key very rapidly 
+across the cluster, so that further primary key lookups are also accelerated. 
+The TPC-H data-set is another standardized benchmark data-set which is useful to demonstrate the impact of 
+LLAP's index fragment caching, with a SCALE=1000 dataset which is loaded with ORC bloom filters.
+
+\begin{lstlisting}[language=sql]
+select count(1) from lineitem where l_orderkey=?? ;
+\end{lstlisting}
+
+\begin{table}[h]
+\begin{tabular}{l|*{3}cr}
+Query & l_orderkey=2 & l_orderkey=3 & l_orderkey=567\\
+\hline \\
+LLAP times & 3.06 & 0.93 & 1.01 \\
+Tez times & 7.88 & 7.65 & 9.40  \\
+\end{tablular}
+\caption{Index Caching}
+\end{table}
+
+The cold run is slower, but the warm runs use the bloom filter indexes which were loaded for the previous run, while Tez has no such 
+caching for bloom filter indexes.
+
+%% \subsection{Cloud Storage: Azure}
+
+%% LLAP: 128 nodes + non-local data
+
+%% Q1 baseline is 357s -> 50s at 1Tb scale.
 
