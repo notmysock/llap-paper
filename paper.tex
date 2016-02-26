@@ -63,43 +63,38 @@ Sergey Shelukhin$^h$, Siddharth Seth $^h$
 
 \begin{abstract}
 Apache Hive has turned SQL into a first-class citizen in the ecosystem surrounding Apache Hadoop.
-The popularity of Apache Hive has been driven by the vast improvements in performance brought in
-by the the addition of a new DAG based execution engine, vectorized operator pipelines, a cost based
-optimizer and compressed columnar storage. Continuing the journey towards ever faster queries,
-as the needle swings closer to sub-second scale, several historical tradeoffs have to be revaluated.  
-In addition to pure performance goals, there are new opportunities offered by the evolution of compute, 
-storage and networking hardware to be taken advantage of.
+In this paper, we introduce LLAP \footnote{Live Long And Process}, a new low latency column service 
+part of Hive-2.0, designed to accelerate interactive SQL queries. LLAP is intended as an addition
+to the existing execution engines to Hive, primarily interacting over ODBC/JDBC connectivity already
+available as part of HiveServer2.
+
+To maintain an interactive user experience, LLAP aims to respond to user input within the timescales
+between 400ms to 4000ms, after which Business Intelligence tools use modal indicators which deny the 
+user an interactive experience. As the latency of query runtimes approach the millisecond scale, 
+several historical tradeoffs made in Hive have to be re-evaluated, in particular the overheads of
+interacting with HDFS \& YARN become significant. Along with changing balance of these interactions, 
+the evolution of compute, storage and networking hardware brings new opportunities to be taken
+advantage of.
+
+The quest for interactive performance however does not allow LLAP to sacrifice failure tolerance or 
+multi-query concurrency, but forces one to develop efficient trade offs between latency and throughput 
+as dependent user goals. LLAP's design draws from the experiences learned from deployments of scale of 
+Apache Hive \& Apache Tez, which have been subject to the same pressures.
 
 
-In this paper, we introduce LLAP, an \emph{in-memory SQL acceleration framework} for Apache Hive, designed
-to run low-latency SQL workloads for ad-hoc querying, Business Intelligence analytics and periodic reporting.
-Central to this design are long lived processes, which provide an in-memory SQL execution substrate which draws
-data out of a completely automated caching layer. The long-lived nature of these LLAP instances, retains the runtime profile
-information of several short queries to provide the JVM JIT long term context to optimize the execution engine
-using \emph{SIMD} instructions to suit the exact users' data model \& workload.
-
-
-Even though low-latency execution is the primary performance goal, it is the combination of failure tolerance, 
-internal pre-emption model based on dynamic query fragment priority, user-transparent replicated data/index fragment
-caching \& eviction, ability to maintain isolation for update/delete ACID transactions and perform out-of-core joins 
-that makes \emph{LLAP} an entirely different beast from the other open source solutions which offer performance at the cost
-of necessary functionality.
-
-
-LLAP's design draws from the experiences learned from deployments of scale of Apache Hive \& Apache Tez. We complement
-the qualitative accounts of LLAP's development with quantitative experimental evidence that the dragon of latency in
-a multi-tenant environment can have its long tail cut.
-
+This paper is a discussion of considerations given to the design of LLAP based on experiments and the
+boundaries within which LLAP offers a solution to the long tail of latency present in a multi-tenant
+environment.
 
 \end{abstract}
 
 \input{intro}
 \input{arch}
+\input{exp}
 \input{cache}
 \input{deploy}
 \input{orchestration}
 \input{concurrency}
-\input{exp}
 \input{futwork}
 \input{relwork}
 \input{conclusions}

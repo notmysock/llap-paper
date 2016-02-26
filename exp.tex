@@ -1,15 +1,113 @@
-\section{Experiments}
+\section{Experiments \& Takeaways}
+
+Before dissecting the internals of LLAP, we take a brief digression into deployments and experiments, 
+which add colour to the architectural discussions. 
+
+\subsection{Yahoo Display Network Benchmark}
+
+Yahoo Japan published a timeseries reporting business case as part of a benchmark\cite{impala_perf} comparing
+latencies of Cloudera Impala\cite{impala} against Apache Hive. This use-case was based on a production scenario
+which features a 500 billion row warehouse which has significant skews in its data distribution. The challenge 
+described in the use-case stemmed from having both throughput and latency SLAs and simulated concurrent users
+creating extracted reports for further analysis.
+
+The use-case divided produced aggregate of metrics bounded by segments, of selected attributes. The segments 
+were primarily the start of the period and the length of the period - daily, weekly, monthly and yearly. The 
+attributes were selection criteria which included user demographics and object identifiers. This does not 
+easily map into a pre-aggregate MOLAP system as the total number of object identifiers were very large and 
+the cross-product against user demographics is only a ~6x reduction in cardinality, which was negated by having
+4 periods of aggregation.
+
+The query pattern for the time-series had a skew towards the last day and last week, which affects a MPP share-nothing
+model adversely by producing a CPU hot-spot around the machines holding the last billion rows. Eventhough Tez was not
+affected by that specific issue due to locality delay scheduling, it was still producing secondary network hotspots
+around the storage nodes which contained more popular user-demographics. 
+
+This experiment gave valuable feedback into the design of LLAP. Along with use of Tez sessions, the benchmark 
+reached an acceptable 5.67 queries per second (20412 queries per hour, exceeding the 15000 queries per hour SLA).
+
+As part of validating LLAP's solution, the exact same benchmark was setup with the latest Hive and run through for the following
+query patterns with 20 users, each user getting a unique tuple of parameters.
+
+\begin{itemize}
+\item \textbf{Query1x}: by object id
+\item \textbf{Query2x}: by dayOfWeek
+\item \textbf{Query6x}: across 50 object ids by device
+\item \textbf{Query7x}: across 50 object ids by dayOfWeek 
+\end{itemize}
+
+\begin{table}[h]
+\begin{tabular}{l|*{4}c}
+Query1x  &   Tez (avg)  &   Tez (worst)  &   LLAP (avg)  &   LLAP (worst) \\
+\hline
+One Day  &   2.53  &   4.5  &   1.33  &   3 \\
+One Week  &   3  &   6.18  &   1.37  &   2.9 \\
+One Month  &   4  &   7.28  &   1.35  &   2.7 \\
+One year  &   7.4  &   19.51  &   3  &   17.22 \\
+\end{tabular}
+\caption{Query1x across different periods (s)}
+\end{table}
+
+\begin{table}[h]
+\begin{tabular}{l|*{4}c}
+Query2x  &   Tez (avg)  &   Tez (worst)  &   LLAP (avg)  &   LLAP (worst) \\
+\hline \\
+One Day  &   2.556  &   6.67  &   1.11  &   1.74 \\
+One Week  &   1.99  &   2.84  &   1.01  &   1.47 \\
+One Month  &   3.07  &   6.65  &   1.29  &   2.2 \\
+One year  &   5.03  &   7.47  &   1.74  &   4.67 \\
+\end{tabular}
+\caption{Query2x across different periods (s)}
+\end{table}
+
+\begin{table}[h]
+\begin{tabular}{l|*{4}c}
+Query6x  &   Tez (avg)  &   Tez (worst)  &   LLAP (avg)  &   LLAP (worst) \\
+\hline \\
+One Day  &   1.9  &   2.6  &   1.17  &   3.63 \\
+One Week  &   2.22  &   5.9  &   1.03  &   1.66 \\
+One Month  &   3.5  &   6.7  &   1.23  &   2.76 \\
+One year  &   6  &   7.27  &   2  &   5.44 \\
+\end{tabular}
+\caption{Query6x across different periods (s)}
+\end{table}
+
+\begin{table}[h]
+\begin{tabular}{l|*{4}c}
+Query7x  &   Tez (avg)  &   Tez (worst)  &   LLAP (avg)  &   LLAP (worst) \\
+\hline \\
+One Day  &   1.9  &   2.6  &   1.17  &   3.63 \\
+One Week  &   2.22  &   5.9  &   1.03  &   1.66 \\
+One Month  &   3.5  &   6.7  &   1.23  &   2.76 \\
+One year  &   6  &   7.27  &   2  &   5.44 \\
+\end{tabular}
+\caption{Query7x across different periods (s)}
+\end{table}
+
+LLAP managed to lower the latency as well as hit a far higher throughput of 15.16 q/s (54576 queries per hour). The 
+performance bottlenecks with LLAP had moved from the data skew towards the cpu utilized by the bottlenecks within
+the JDBC layer in HiveServer2. This was isolated from the use-case by increasing the total number of users in the system and
+increasing the number of HiveServer2 until worst case latencies dropped out of SLA.
+
+\begin{table}[h]
+\begin{tabular}{l|*{3}c}
+Concurrency & Q/S & LLAP(avg) & LLAP (worst) \\
+\hline \\
+5 Users x 1 HS2 & 4.51 & 1.11 & 1.91 \\
+10 Users x 1 HS2 & 8.67 & 1.15 & 1.8 \\
+20 Users x 1 HS2 & 15.16 & 1.32 & 2.26 \\
+20 Users x 3 HS2 & 14.71 & 1.36 & 2.13 \\
+48 Users x 3 HS2 & 25.07 & 1.92 & 3.94 \\
+72 Users x 3 HS2 & 30.62 & 2.35 & 5.64 \\
+96 Users x 3 HS2 & 34.19 & 2.81 & 7.39 \\
+\end{tabular}
+\caption{HiveServer2 Concurrency Tests}
+\end{table}
 
 %% \subsection{TPC-DS Derived Comparison}
 %% Q19, Q27, Q42, Q52, Q55, Q68, Q73, Q98?
 
-\subsection{Yahoo Display Network Report}
-
-Hive on Tez: 5.67[q/s] (20412[q/h])
-
-LLAP: 24.01[q/s] (384 thread, 5 HiveServer2, hive.llap.io.threadpool.size=40)
-
-Describe Zipfian distribution issues with ads clicked.
+%% \subsection{Yahoo Display Network Report}
 
 \subsection{Azure}
 
