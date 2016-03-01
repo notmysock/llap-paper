@@ -122,7 +122,7 @@ Query 55 & 0.89 & 5 \\
 Query 68 & 2.86 & 9 \\
 Query 73 & 1.53 & 7 \\
 Query 98 & 3.90 & 6 \\
-\end{tablular}
+\end{tabular}
 \caption{Interactive Queries on LLAP}
 \end{table}
 
@@ -137,16 +137,16 @@ The TPC-H data-set is another standardized benchmark data-set which is useful to
 LLAP's index fragment caching, with a SCALE=1000 dataset which is loaded with ORC bloom filters.
 
 \begin{lstlisting}[language=sql]
-select count(1) from lineitem where l_orderkey=?? ;
+select count(1) from lineitem where l\_orderkey=?? ;
 \end{lstlisting}
 
 \begin{table}[h]
 \begin{tabular}{l|*{3}cr}
-Query & l_orderkey=2 & l_orderkey=3 & l_orderkey=567\\
+Query & l\_orderkey=2 & l\_orderkey=3 & l\_orderkey=567\\
 \hline \\
 LLAP times & 3.06 & 0.93 & 1.01 \\
 Tez times & 7.88 & 7.65 & 9.40  \\
-\end{tablular}
+\end{tabular}
 \caption{Index Caching}
 \end{table}
 
