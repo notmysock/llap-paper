@@ -1,26 +1,7 @@
-
-Central to this design are long lived processes, which provide an in-memory SQL execution substrate which draws
-data out of a completely automated caching layer. The long-lived nature of these LLAP instances, retains the runtime profile
-information of several short queries to provide the JVM JIT long term context to optimize the execution engine
-using \emph{SIMD} instructions to suit the exact users' data model \& workload.
-
-
-Even though low-latency execution is the primary performance goal, it is the combination of failure tolerance, 
-internal pre-emption model based on dynamic query fragment priority, user-transparent replicated data/index fragment
-caching \& eviction, ability to maintain isolation for update/delete ACID transactions and perform out-of-core joins 
-that makes \emph{LLAP} an entirely different beast from the other open source solutions which offer performance at the cost
-of necessary functionality.
-
-
-LLAP's design draws from the experiences learned from deployments of scale of Apache Hive \& Apache Tez. We complement
-the qualitative accounts of LLAP's development with quantitative experimental evidence that the dragon of latency in
-a multi-tenant environment can have its long tail cut.
-
-
-\section{Introduction}
+\section{Background}
 
 LLAP is the most recent addition in a long journey Hive has taken as part of the Stinger and Stinger.next initiatives, which has added 
-Apache Tez \cite{tez}, Apache ORC \cite{orc} and Apache Calcite \cite{cbo} to the Hive's repertoire.
+Apache Tez \cite{tez}, Apache ORC \cite{orc} and Apache Calcite \cite{cbo} to Hive's repertoire.
 LLAP is unique in its pursuit of the low-latency goals as it does not try to reinvent a completely new SQL engine. It offers a column service 
 layer which interacts with the Hive execution engine, with dynamic decisions on whether a query or even parts of a query render down 
 into the LLAP query fragments. As a flexible optional accelerator, this brings it closer to production readiness than other solutions
