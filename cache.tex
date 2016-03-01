@@ -43,7 +43,7 @@ for data that was never in the cache. This is used to determine the row-groups t
 against the metadata before determining cache misses for the column chunks. With this in place, the first scan populates the indexes
 in bulk and navigating within a dimension will not have to thrash the cache with column chunks which are effectively index misses.
 
-To maintain Cache Coherence, in the presence of updates, the cache lookup uses the HDFS FileId as the unique identifier to 
+To maintain validty of the cache, in the presence of updates, the cache lookup uses the HDFS FileId as the unique identifier to 
 differentiate files of the same name which have different lineages. For extra strength, this combined with the length of the file
 to detect appends to a file and for other fileystems, there are strong consistency equivalents to the FileId such as the ETag 
 fields present in blob stores like Amazon S3\cite{S3} or Azure WASB\cite{WASB}. 

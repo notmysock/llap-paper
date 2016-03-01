@@ -63,10 +63,10 @@ Sergey Shelukhin$^h$, Siddharth Seth $^h$
 
 \begin{abstract}
 Apache Hive has turned SQL into a first-class citizen in the ecosystem surrounding Apache Hadoop.
-In this paper, we introduce LLAP \footnote{Live Long And Process}, a new low latency column service 
-part of Hive-2.0, designed to accelerate interactive SQL queries. LLAP is intended as an addition
-to the existing execution engines to Hive, primarily interacting over ODBC/JDBC connectivity already
-available as part of HiveServer2.
+In this paper, we introduce a new addition to Hive, a new low latency column service named
+LLAP\footnote{Live Long And Process}, designed to accelerate interactive SQL queries. LLAP is intended 
+as an addition to the existing execution engines to Hive, primarily interacting over ODBC/JDBC 
+connectivity already available in Hive.
 
 To maintain an interactive user experience, LLAP aims to respond to user input within the timescales
 between 400ms to 4000ms, after which Business Intelligence tools use modal indicators which deny the 
@@ -76,15 +76,14 @@ interacting with HDFS \& YARN become significant. Along with changing balance of
 the evolution of compute, storage and networking hardware brings new opportunities to be taken
 advantage of.
 
-The quest for interactive performance however does not allow LLAP to sacrifice failure tolerance or 
-multi-query concurrency, but forces one to develop efficient trade offs between latency and throughput 
-as dependent user goals. LLAP's design draws from the experiences learned from deployments of scale of 
-Apache Hive \& Apache Tez, which have been subject to the same pressures.
+The quest for interactive performance however does not allow LLAP to sacrifice failure tolerance,
+security or multi-query concurrency, but forces one to develop efficient trade offs between latency and 
+throughput without any sacrifices. LLAP's design draws from the experiences learned from deployments of
+scale of Apache Hive \& Apache Tez, which have been subject to the same pressures.
 
-
-This paper is a discussion of considerations given to the design of LLAP based on experiments and the
-boundaries within which LLAP offers a solution to the long tail of latency present in a multi-tenant
-environment.
+This paper is a discussion of considerations given to the design of LLAP, based on experiments with
+interactive queries and the boundaries within which LLAP offers a solution to the long tail of latency 
+present in a multi-tenant environment.
 
 \end{abstract}
 
