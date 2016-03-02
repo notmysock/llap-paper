@@ -162,12 +162,10 @@ Concurrency & Throughput (Q/S) & LLAP(avg)s & LLAP (worst)s \\
 The TPC-DS data-set is a better candiate for a repeatable benchmark for LLAP, allowing any cluster to generate
 identical data at scale factors for testing. The experimental setup is a \emph{SCALE=1000} TPC-DS data set generated
 and loaded using the schema from hive-testbench\cite{testbench}, with interactive set of 27, 42, 52, 55, 68, 73 and 98, 
-without introducing any partition filters on the queries.
+without introducing any partition filters on the queries. Every query involved is a multi-stage query, with internal 
+shuffle distribution edges, as is illustrated with Query 55 in figure~\ref{fig:q55}.  
 
-These are all multi-stage queries from a MapReduce context, with internal shuffle distribution edges. For example, 
-Query 55 DAG plan is illustrated in figure~\ref{fig:q55}.  
-
-Benchmarked on a Hadoop 2.7.1 cluster, with following hardware configuration.
+Benchmarks were performed on a 20 node Hadoop 2.7.1 cluster, with following hardware configuration.
 
 \begin{itemize}
 \item 2x Intel(R) Xeon(R) CPU E5-2640 v2 @ 2.00GHz for total of 16 CPU cores/machine
