@@ -150,7 +150,7 @@ Concurrency & Throughput (Q/S) & LLAP(avg)s & LLAP (worst)s \\
 \end{table}
 \fi
 
-\subsection{Interactive Queries}
+\subsection{TPC-DS Interactive Queries}
 
 \begin{figure}[bthp]
 \centering
@@ -177,8 +177,8 @@ Benchmarked on a Hadoop 2.7.1 cluster, with following hardware configuration.
 \end{itemize}
 
 The LLAP instances were created with 128Gb of working set memory, 32Gb of cache and 16 executor threads per
-instance. Beyond the normal configuration require for Hive CBO, the following configurations were applied to
-the HiveServer2
+instance. The following configurations were applied to the Hive planner to produce consistent cache coherent 
+runs during benchmarking.
 
 \begin{itemize}
 \item hive.llap.task.scheduler.locality.delay=-1;
@@ -211,5 +211,5 @@ Query 98 & 5.36  \\
 \end{figure} 
 
 The queries 42, 52 \& 55, can run at the similar latencies even when using a single LLAP instance to compare against, since they process
-approximately 93 million rows, which is less than the single node processing rate of LLAP at approximately 115 million rows per second  
-for ORC data.
+approximately 93 million rows, which is less than the single node processing rate of LLAP clocked at approximately 115 million rows per second  
+for ORC.

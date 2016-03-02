@@ -1,9 +1,9 @@
-\section{Deploy \& Elasticity}
+\section{Elasticity}
 
-LLAP is designed to run as a YARN application packaged by Apache Slider\cite{slider}, not as a daemon deployed by system installers. This brings multiple advantages within a Hadoop-2 cluster, first of which is that 
-LLAP can be deployed and administered by a user who does not have access to any worker node on the cluster. The fact that YARN allocates containers and can possibly migrate away
-from a blacklisted or decommisioning node provides automatic self-healing to the LLAP cluster, where a new container will take the place of one which has fallen without any user
-intervention.
+LLAP is designed to run as an elastic YARN application packaged by Apache Slider\cite{slider}, not as a daemon deployed by system installers. This brings multiple advantages within
+a Hadoop-2 cluster, first of which is that LLAP can be deployed and administered by a user who does not have access to any worker node on the cluster. The fact that YARN allocates
+containers and can possibly migrate away from a blacklisted or decommisioning node provides automatic self-healing to the LLAP cluster, where a new container will take the place 
+of one which has fallen without any user intervention.
 
 To cope in such a dynamically shifting environment, LLAP has had to build its own cluster membership protocols. The cluster membership is published through the YARN Service Registry or the 
 alternate Zookeeper implementation keeps track of all existing LLAP nodes without a centralized master service to locate nodes. The service registry forms the discovery mechanism for the
@@ -12,5 +12,3 @@ orchestration systems which need to locate LLAP instances, obtain instance confi
 The dynamic discovery protocols and the existing failure tolerance models required to handle machine failures form the two pillars on which LLAP achieves elasticity based on user schedules. 
 One of the common cost-efficiency problems for analyst driven BI tools is that they're wasted capacity, idling through out the non-office hours.  LLAP can \emph{flex} up and down within the
 cluster to free up capacity during the off-hours for the cluster to be put to better use and for batch workloads.
-
-This elasticity model has been designed so that this can happen without any user commands at all and can be purely controlled with a queue reservetion schedule within the YARN resource manager, as described in Microsoft Rayon paper \cite{rayon}.

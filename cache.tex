@@ -14,7 +14,7 @@ The IO elevator and the operator pipeline work through a small pool of vectorize
 as a producer-consumer queue. The IO elevator places decoded batches into the pool, while the operator pipeline
 consumes each batch and returns the batches to the elevator for disposal/reuse.
 
-\begin{figure}[H]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\columnwidth]{figures/elevator.png}
 \caption{LLAP: IO Elevator}
@@ -31,7 +31,7 @@ pipeline. In case of cache misses, the cache is repopulated with the missing chu
 simplifying the codepath and producing an incremental buildup of the cache as a user navigates the data-set along denormalized
 dimensions, which is the common pattern the cache optimizes for.
 
-\begin{figure}[H]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\columnwidth]{figures/cache-groups.png}
 \caption{LLAP: Cache addressing}
@@ -55,7 +55,7 @@ on the policy. The policy itself is pluggable, the initial policies available ar
 workloads with frequent partial table-scans, where retaining frequently used columns can provide cache hits if the projections in the
 workload is popular.
 
-\begin{figure}[H]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\columnwidth]{figures/evictions.png}
 \caption{LLAP: Cache Policies}
@@ -65,8 +65,13 @@ workload is popular.
 The cache internally uses a BuddyAllocator which handles the fragmentation issues that stem from evictions. The Allocator divies all
 allocations into a series of Arenas, with each arena not being bigger than \emph{2Gb} in size due to 32 bit limitations in 
 the off-heap APIs. Since the adjacent free blocks are always merged, the cache eviction does not return any memory to the system unlike
-the buffer pools, therefore it will reuse the address space for future allocations. LLAP does not use the non-volatile nature of NVMe/NVMDIMM
+the buffer pools, therefore it will reuse the address space for future allocations. 
+
+\iffalse
+%% TODO: move to discussions
+%% (TODO: discuss fallocate fl_hole_punch as a way of triggering TRIM for garbage).
+LLAP does not use the non-volatile nature of NVMe/NVMDIMM
 backed caches, preferring to reinintialize the cache on restarts, which removes any potential wear-levelling concerns the BuddyAllocator
 brings in by reusing blocks.
+\fi
 
-%% (TODO: discuss fallocate fl_hole_punch as a way of triggering TRIM for garbage).
