@@ -41,6 +41,7 @@ were configured to utilize 96Gb per node, running 24 threads in total with a 10G
 in LLAP was turned to WARN level to reduce IO overheads. All queries were executed from a single gateway node, over JDBC connections 
 and latencies measured are seconds for JDBC submission till last row.
 
+\iffalse
 \begin{table}[h]
 \begin{tabular}{l|*{4}c}
 Query1x  &   Tez (avg)  &   Tez (worst)  &   LLAP (avg)  &   LLAP (worst) \\
@@ -88,12 +89,51 @@ One year  &   6  &   7.27  &   2  &   5.44 \\
 \end{tabular}
 \caption{Query7x across different periods (s)}
 \end{table}
+\fi
+
+\begin{figure}[bthp]
+\centering
+\includegraphics[width=0.9\columnwidth]{figures/q1x.pdf}
+\caption{Query1x across different periods (s)}
+\label{fig:q1x}
+\end{figure} 
+
+\begin{figure}[bthp]
+\centering
+\includegraphics[width=0.9\columnwidth]{figures/q2x.pdf}
+\caption{Query2x across different periods (s)}
+\label{fig:q2x}
+\end{figure} 
+
+\begin{figure}[bthp]
+\centering
+\includegraphics[width=0.9\columnwidth]{figures/q6x.pdf}
+\caption{Query6x across different periods (s)}
+\label{fig:q6x}
+\end{figure} 
+
+\begin{figure}[bthp]
+\centering
+\includegraphics[width=0.9\columnwidth]{figures/q7x.pdf}
+\caption{Query7x across different periods (s)}
+\label{fig:q7x}
+\end{figure} 
+
 
 LLAP managed to lower the latency as well as hit a far higher throughput of 15.16 q/s (54576 queries per hour). The 
 performance bottlenecks with LLAP had moved from the data skew towards the cpu utilized by the bottlenecks within
 the JDBC layer in HiveServer2. This was isolated from the use-case by increasing the total number of users in the system and
 increasing the number of HiveServer2 until worst case latencies dropped out of SLA.
 
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.9\columnwidth]{figures/throughput.pdf}
+\label{fig:throughput}
+\caption{HiveServer2 Concurrency Tests}
+\end{figure}
+
+\iffalse
 \begin{table}[H]
 \begin{tabular}{l|*{3}c}
 Concurrency & Throughput (Q/S) & LLAP(avg)s & LLAP (worst)s \\
@@ -108,6 +148,7 @@ Concurrency & Throughput (Q/S) & LLAP(avg)s & LLAP (worst)s \\
 \end{tabular}
 \caption{HiveServer2 Concurrency Tests}
 \end{table}
+\fi
 
 \subsection{Interactive Queries}
 
@@ -145,9 +186,10 @@ the HiveServer2
 \item hive.optimize.reducededuplication.min.reducer=1;
 \end{itemize}
 
+\iffalse
 \begin{table}[h]
 \begin{tabular}{l|*{1}cr}
-Query & LLAP time\footnote{not JDBC time, but DAG execution time spent in LLAP} (s)\\
+Query & LLAP time(s)\\
 \hline \\
 Query 27 & 3.13  \\
 Query 42 & 0.98  \\
@@ -159,6 +201,15 @@ Query 98 & 5.36  \\
 \end{tabular}
 \caption{Interactive Queries on LLAP}
 \end{table}
+\fi
+
+\begin{figure}[bthp]
+\centering
+\includegraphics[width=0.8\columnwidth]{figures/tpc-ds.pdf}
+\caption{Interactive queries: LLAP vs Tez}
+\label{fig:llap_v_tez}
+\end{figure} 
 
 The queries 42, 52 \& 55, can run at the similar latencies even when using a single LLAP instance to compare against, since they process
-approximately 93 million rows, which is less than the processing rate of LLAP at approximately 115 million rows per second for ORC data.
+approximately 93 million rows, which is less than the single node processing rate of LLAP at approximately 115 million rows per second  
+for ORC data.
