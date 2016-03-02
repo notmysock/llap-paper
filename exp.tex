@@ -118,23 +118,32 @@ Concurrency & Throughput (Q/S) & LLAP(avg)s & LLAP (worst)s \\
 \label{fig:q55}
 \end{figure} 
 
-
 The TPC-DS data-set is a better candiate for a repeatable benchmark for LLAP, allowing any cluster to generate
-identical data at scale factors for testing. The experimental setup is a \emph{SCALE=1000} TPC-DS data set using the 
-schema from hive-testbench\cite{testbench}, with interactive set of 27, 42, 52, 55, 68, 73 and 98, without
-introducing any partition filters on the queries.
+identical data at scale factors for testing. The experimental setup is a \emph{SCALE=1000} TPC-DS data set generated
+and loaded using the schema from hive-testbench\cite{testbench}, with interactive set of 27, 42, 52, 55, 68, 73 and 98, 
+without introducing any partition filters on the queries.
 
-These are all multi-stage queries from a MapReduce context, with internal distribution points. For example, Query 55
-is a complex query which is drawn out as a DAG in figure~\ref{fig:q55}.  
+These are all multi-stage queries from a MapReduce context, with internal shuffle distribution edges. For example, 
+Query 55 DAG plan is illustrated in figure~\ref{fig:q55}.  
 
-Benchmarked on 18 LLAP instance, with following settings.
+Benchmarked on a Hadoop 2.7.1 cluster, with following hardware configuration.
 
-\begin{lstlisting}
-hive.cbo.enable=true;
-hive.optimize.reducededuplication.min.reducer=1;
-hive.llap.task.scheduler.locality.delay=-1;
-hive.llap.client.consistent.splits=true;
-\end{lstlisting}
+\begin{itemize}
+\item 2x Intel(R) Xeon(R) CPU E5-2640 v2 @ 2.00GHz for total of 16 CPU cores/machine
+\item 256GB RAM per node
+\item 6x 4TB WDC WD4000FYYZ-0 drives per node
+\item 10 Gigabit interconnect between the nodes
+\end{itemize}
+
+The LLAP instances were created with 128Gb of working set memory, 32Gb of cache and 16 executor threads per
+instance. Beyond the normal configuration require for Hive CBO, the following configurations were applied to
+the HiveServer2
+
+\begin{itemize}
+\item hive.llap.task.scheduler.locality.delay=-1;
+\item hive.llap.client.consistent.splits=true;
+\item hive.optimize.reducededuplication.min.reducer=1;
+\end{itemize}
 
 \begin{table}[h]
 \begin{tabular}{l|*{1}cr}
@@ -151,5 +160,5 @@ Query 98 & 5.36  \\
 \caption{Interactive Queries on LLAP}
 \end{table}
 
-The queries 42, 52 \& 55, can run at the similar latencies even when using a single LLAP instance to compare against, since they process approx
-93 million  rows, while the 1 node processing rate of LLAP is 114,996,576.54 rows/sec for ORC data in store\_sales. 
+The queries 42, 52 \& 55, can run at the similar latencies even when using a single LLAP instance to compare against, since they process
+approximately 93 million rows, which is less than the processing rate of LLAP at approximately 115 million rows per second for ORC data.
