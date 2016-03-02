@@ -1,0 +1,22 @@
+digraph select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_ {
+graph [rankdir=BT]
+node [fontsize=12, fontname=Helvetica];
+edge [fontsize=9, fontcolor=black, fontname=Arial];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_1_store_sales" [ label = "Map_1[store_sales]", shape = "box" , color= "black"];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_1_store_sales" -> "select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_1" [ label = "Input [inputClass=MRInputLegacy,\n initializer=HiveSplitGenerator]" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Reducer_2" [ label = "Reducer_2[ReduceTezProcessor]" , color= "black" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Reducer_2" -> "select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Reducer_3" [ label = "[input=OrderedPartitionedKVOutput,\n output=OrderedGroupedKVInput,\n dataMovement=SCATTER_GATHER,\n schedulingType=SEQUENTIAL]" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_4_date_dim" [ label = "Map_4[date_dim]", shape = "box" , color= "black"];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_4_date_dim" -> "select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_4" [ label = "Input [inputClass=MRInputLegacy,\n initializer=HiveSplitGenerator]" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Reducer_3" [ label = "Reducer_3[ReduceTezProcessor]" , color= "black" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Reducer_3" -> "select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Reducer_3_out_Reducer_3" [ label = "Output [outputClass=MROutput,\n committer=]" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Reducer_3_out_Reducer_3" [ label = "Reducer_3[out_Reducer_3]", shape = "box" , color= "black"];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_5" [ label = "Map_5[MapTezProcessor]" , color= "black" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_5" -> "select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_1" [ label = "[input=UnorderedKVOutput,\n output=UnorderedKVInput,\n dataMovement=BROADCAST,\n schedulingType=SEQUENTIAL]" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_5_item" [ label = "Map_5[item]", shape = "box" , color= "black"];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_5_item" -> "select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_5" [ label = "Input [inputClass=MRInputLegacy,\n initializer=HiveSplitGenerator]" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_1" [ label = "Map_1[MapTezProcessor]" , color= "black" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_1" -> "select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Reducer_2" [ label = "[input=OrderedPartitionedKVOutput,\n output=OrderedGroupedKVInput,\n dataMovement=SCATTER_GATHER,\n schedulingType=SEQUENTIAL]" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_4" [ label = "Map_4[MapTezProcessor]" , color= "black" ];
+"select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_4" -> "select_i_brand_id_brand_id_i_brand_bran_9_Stage_1_.Map_1" [ label = "[input=UnorderedKVOutput,\n output=UnorderedKVInput,\n dataMovement=BROADCAST,\n schedulingType=SEQUENTIAL]" ];
+}

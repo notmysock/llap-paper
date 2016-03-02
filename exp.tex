@@ -15,8 +15,8 @@ The use-case divided produced aggregate of metrics bounded by segments, of selec
 were primarily the start of the period and the length of the period - daily, weekly, monthly and yearly. The 
 attributes were selection criteria which included user demographics and object identifiers. This does not 
 easily map into a pre-aggregate MOLAP system as the total number of object identifiers were very large and 
-the cross-product against user demographics is only a ~6x reduction in cardinality, which was negated by having
-4 periods of aggregation.
+the join against total dimensions produced very little reduction in data, when maintained on a daily basis for
+a year.
 
 The query pattern for the time-series had a skew towards the last day and last week, which affects a MPP share-nothing
 model adversely by producing a CPU hot-spot around the machines holding the last billion rows. Eventhough Tez was not
@@ -30,11 +30,16 @@ As part of validating LLAP's solution, the exact same benchmark was setup with t
 query patterns with 20 users, each user getting a unique tuple of parameters.
 
 \begin{itemize}
-\item \textbf{Query1x}: by object id
-\item \textbf{Query2x}: by dayOfWeek
+\item \textbf{Query1x}: aggregate by object id
+\item \textbf{Query2x}: aggregate by day
 \item \textbf{Query6x}: across 50 object ids by device
-\item \textbf{Query7x}: across 50 object ids by dayOfWeek 
+\item \textbf{Query7x}: across 50 object ids by day
 \end{itemize}
+
+The experimental 50 node cluster had machines with 10Gigabit Ethernet, 20 cores, 128Gb of RAM and 12 disks in each. The LLAP instances
+were configured to utilize 96Gb per node, running 24 threads in total with a 10Gb cache. For the purpose of the benchmark, all logging
+in LLAP was turned to WARN level to reduce IO overheads. All queries were executed from a single gateway node, over JDBC connections 
+and latencies measured are seconds for JDBC submission till last row.
 
 \begin{table}[h]
 \begin{tabular}{l|*{4}c}
@@ -89,9 +94,9 @@ performance bottlenecks with LLAP had moved from the data skew towards the cpu u
 the JDBC layer in HiveServer2. This was isolated from the use-case by increasing the total number of users in the system and
 increasing the number of HiveServer2 until worst case latencies dropped out of SLA.
 
-\begin{table}[h]
+\begin{table}[H]
 \begin{tabular}{l|*{3}c}
-Concurrency & Q/S & LLAP(avg) & LLAP (worst) \\
+Concurrency & Throughput (Q/S) & LLAP(avg)s & LLAP (worst)s \\
 \hline \\
 5 Users x 1 HS2 & 4.51 & 1.11 & 1.91 \\
 10 Users x 1 HS2 & 8.67 & 1.15 & 1.8 \\
@@ -106,56 +111,45 @@ Concurrency & Q/S & LLAP(avg) & LLAP (worst) \\
 
 \subsection{Interactive Queries}
 
+\begin{figure}[bthp]
+\centering
+\includegraphics[width=0.8\columnwidth]{figures/q55.eps}
+\caption{Query55: DAG Plan}
+\label{fig:q55}
+\end{figure} 
+
+
 The TPC-DS data-set is a better candiate for a repeatable benchmark for LLAP, allowing any cluster to generate
-identical data at scale factors for testing. The experimental setup is a SCALE=1000 TPC-DS data set using the 
-schema from hive-testbench\cite{testbench}, with interactive queries 
-27, 42, 52, 55, 68, 73 and 98.
+identical data at scale factors for testing. The experimental setup is a \emph{SCALE=1000} TPC-DS data set using the 
+schema from hive-testbench\cite{testbench}, with interactive set of 27, 42, 52, 55, 68, 73 and 98, without
+introducing any partition filters on the queries.
+
+These are all multi-stage queries from a MapReduce context, with internal distribution points. For example, Query 55
+is a complex query which is drawn out as a DAG in figure~\ref{fig:q55}.  
+
+Benchmarked on 18 LLAP instance, with following settings.
+
+\begin{lstlisting}
+hive.cbo.enable=true;
+hive.optimize.reducededuplication.min.reducer=1;
+hive.llap.task.scheduler.locality.delay=-1;
+hive.llap.client.consistent.splits=true;
+\end{lstlisting}
 
 \begin{table}[h]
 \begin{tabular}{l|*{1}cr}
-Query & LLAP time (s) & Vertices \\
+Query & LLAP time\footnote{not JDBC time, but DAG execution time spent in LLAP} (s)\\
 \hline \\
-Query 27 & 4.35 & 7  \\
-Query 42 & 0.97 & 5  \\
-Query 52 & 1.27 & 5  \\
-Query 55 & 0.89 & 5 \\
-Query 68 & 2.86 & 9 \\
-Query 73 & 1.53 & 7 \\
-Query 98 & 3.90 & 6 \\
+Query 27 & 3.13  \\
+Query 42 & 0.98  \\
+Query 52 & 1.05  \\
+Query 55 & 1.76  \\
+Query 68 & 4.77  \\
+Query 73 & 1.90  \\
+Query 98 & 5.36  \\
 \end{tabular}
 \caption{Interactive Queries on LLAP}
 \end{table}
 
-In this example, the compilation time for the query has been excluded from the benchmark as it overshadows the
-total runtime of the query.
-
-\subsection{Index Caching}
-
-Lookups for a single primary key can populate indexes for the primary key very rapidly 
-across the cluster, so that further primary key lookups are also accelerated. 
-The TPC-H data-set is another standardized benchmark data-set which is useful to demonstrate the impact of 
-LLAP's index fragment caching, with a SCALE=1000 dataset which is loaded with ORC bloom filters.
-
-\begin{lstlisting}[language=sql]
-select count(1) from lineitem where l\_orderkey=?? ;
-\end{lstlisting}
-
-\begin{table}[h]
-\begin{tabular}{l|*{3}cr}
-Query & l\_orderkey=2 & l\_orderkey=3 & l\_orderkey=567\\
-\hline \\
-LLAP times & 3.06 & 0.93 & 1.01 \\
-Tez times & 7.88 & 7.65 & 9.40  \\
-\end{tabular}
-\caption{Index Caching}
-\end{table}
-
-The cold run is slower, but the warm runs use the bloom filter indexes which were loaded for the previous run, while Tez has no such 
-caching for bloom filter indexes.
-
-%% \subsection{Cloud Storage: Azure}
-
-%% LLAP: 128 nodes + non-local data
-
-%% Q1 baseline is 357s -> 50s at 1Tb scale.
-
+The queries 42, 52 \& 55, can run at the similar latencies even when using a single LLAP instance to compare against, since they process approx
+93 million  rows, while the 1 node processing rate of LLAP is 114,996,576.54 rows/sec for ORC data in store\_sales. 
